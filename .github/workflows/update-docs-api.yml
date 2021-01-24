@@ -1,0 +1,35 @@
+name: 'Update api documentation'
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  update:
+    name: Update
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - name: Prepare .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Run release build
+        run: dotnet run -- --release --xml-documentation --targets docs
+        working-directory: './Build'
+
+      - name: Clean build
+        run: dotnet run -- --targets clean
+        working-directory: './Build'
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: update-api
